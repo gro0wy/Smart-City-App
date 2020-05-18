@@ -1,117 +1,110 @@
+// PROJECT3 - Smart City Application
+
+// Fercan Þen	- 20150602038
+// Naz Tekinalp - 20160602033
+// Mert Kesimli - 20160602017
+
+// Patterns used on this project are:
+// Factory Pattern
+// Singleton Pattern
+// Composite Pattern
+// Visitor Pattern
+// Observer Pattern
+
+
 import java.util.ArrayList;
 
-//Creator (SensorCreator)
+// Factory Pattern Starts
 
-abstract class SensorCreator {
-
+// SensorCreator => Creator
+abstract class SensorCreator { 
 	abstract public Sensor createSensor();
-//	public ArrayList<Sensor> sensors;
-
 }
 
-//Concrete Creators
-
+// Singleton is implemented on Concrete Creators with getInstance()
+// PollutionCreator => Concrete Creator
 class PollutionCreator extends SensorCreator {
 
 	public Sensor createSensor() {
-		PollutionSensor sensor = new PollutionSensor("Pollution Sensor", false, "AQI", 105.7);
-//		sensors.add(sensor);
+		PollutionSensor sensor = new PollutionSensor("Pollution Sensor", false, "AQI", 105.7, "Apartment");
 		return sensor;
 	}
 
-	public static PollutionCreator getInstance() {
+	public static PollutionCreator getInstance() { 
 		if (uniqueInstance == null) {
-
 			uniqueInstance = new PollutionCreator();
-
 		}
 		return uniqueInstance;
-
 	}
-
 	private static PollutionCreator uniqueInstance = null;
-
 }
 
+// TemperatureCreator => Concrete Creator
 class TemperatureCreator extends SensorCreator {
 
 	public Sensor createSensor() {
-		TemperatureSensor sensor = new TemperatureSensor("Temperature Sensor", false, "C°", 45.3);
-//		sensors.add(sensor);
+		TemperatureSensor sensor = new TemperatureSensor("Temperature Sensor", false, "C°", 45.3, "Apartment");
 		return sensor;
 	}
 
 	public static TemperatureCreator getInstance() {
 		if (uniqueInstance == null) {
-
 			uniqueInstance = new TemperatureCreator();
-
 		}
 		return uniqueInstance;
-
 	}
-
 	private static TemperatureCreator uniqueInstance = null;
-
 }
 
+// CongestionCreator => Concrete Creator
 class CongestionCreator extends SensorCreator {
 
 	public Sensor createSensor() {
-		CongestionSensor sensor = new CongestionSensor("Congestion Sensor", false, "km/h", 100);
-//		sensors.add(sensor);
+		CongestionSensor sensor = new CongestionSensor("Congestion Sensor", false, "km/h", 100, "Pole");
 		return sensor;
 	}
 
 	public static CongestionCreator getInstance() {
 		if (uniqueInstance == null) {
-
 			uniqueInstance = new CongestionCreator();
-
 		}
 		return uniqueInstance;
-
 	}
-
 	private static CongestionCreator uniqueInstance = null;
-
 }
 
+// NoiseCreator => Concrete Creator
 class NoiseCreator extends SensorCreator {
 
 	public Sensor createSensor() {
-
-		NoiseSensor sensor = new NoiseSensor("Noise Sensor", false, "dB", 75);
-//		sensors.add(sensor);
+		NoiseSensor sensor = new NoiseSensor("Noise Sensor", false, "dB", 75, "Pole");
 		return sensor;
 	}
 
 	public static NoiseCreator getInstance() {
 		if (uniqueInstance == null) {
-
 			uniqueInstance = new NoiseCreator();
-
 		}
 		return uniqueInstance;
-
 	}
-
 	private static NoiseCreator uniqueInstance = null;
-
 }
 
 // Concrete Creators Ends
 
-// Concrete Products
+// Concrete Products Starts
 
+// PollutionSensor => Concrete Product
 class PollutionSensor extends Sensor {
 
-	public PollutionSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue) {
-		super(sensorName, sensorStatus, unit, sensorValue);
+	public PollutionSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue, String installationType) {
+		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Pollution Sensor");
 		unit = new String("AQI");
-		System.out.println("Pollution Sensor is created...");
-
+		
+		System.out.print("Pollution Sensor is installed to ");
+		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
+		System.out.println(getInstallationType());
 	}
 
 	public void Accept(Visitor visitor) {
@@ -120,30 +113,32 @@ class PollutionSensor extends Sensor {
 
 	@Override
 	public void sensorCalculate(double sensorValue) {
-		if (sensorValue > 100) {
+		if (getSensorValue() > 100) {
+			
+			System.out.println(displaySensorName() + " is above 100" + getUnit() + ", current value is: " + getSensorValue()
+			+ getUnit());
 			NotifyCitizen();
+			
 		}
-		System.out.println(displaySensorName() + "is above 100" + getUnit() + ", current value is: " + getSensorValue()
-				+ getUnit());
-
+		
 	}
 
 	@Override
 	public void checkSensorStatus(boolean sensorStatus) {
-		if (sensorStatus == false) {
+		if (getSensorStatus() == false) {
 			NotifyEngineer();
-			System.out.println(displaySensorName() + " is down!!!!");
 		}
 	}
 }
 
+// TemperatureSensor => Concrete Product
 class TemperatureSensor extends Sensor {
-	public TemperatureSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue) {
-		super(sensorName, sensorStatus, unit, sensorValue);
+	public TemperatureSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue, String installationType) {
+		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Temperature Sensor");
 		unit = new String("C°");
-		System.out.println("Temperature Sensor is created...");
-
+		System.out.print("Temperature Sensor is installed to ");
+		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
 	}
 
 	public void Accept(Visitor visitor) {
@@ -152,30 +147,32 @@ class TemperatureSensor extends Sensor {
 
 	@Override
 	public void sensorCalculate(double sensorValue) {
-		if (sensorValue < 0) {
-			NotifyCitizen();
-			System.out.println(displaySensorName() + "is below 0" + getUnit() + ", current value is: "
+		if (getSensorValue() < 0) {
+			System.out.println(displaySensorName() + " is below 0" + getUnit() + ", current value is: "
 					+ getSensorValue() + getUnit());
+			NotifyCitizen();
+			
 		}
-
 	}
 
 	@Override
 	public void checkSensorStatus(boolean sensorStatus) {
-		if (sensorStatus == false) {
+		if (getSensorStatus() == false) {
+	
 			NotifyEngineer();
-			System.out.println(displaySensorName() + " is down!!!!");
+			
 		}
 	}
 }
 
+// CongestionSensor => Concrete Product
 class CongestionSensor extends Sensor {
-	public CongestionSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue) {
-		super(sensorName, sensorStatus, unit, sensorValue);
+	public CongestionSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue, String installationType) {
+		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Congestion Sensor");
 		unit = new String("km/h");
-		System.out.println("Congestion Sensor is created...");
-
+		System.out.print("Congestion Sensor is installed to ");
+		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
 	}
 
 	public void Accept(Visitor visitor) {
@@ -184,31 +181,32 @@ class CongestionSensor extends Sensor {
 
 	@Override
 	public void sensorCalculate(double sensorValue) {
-		if (sensorValue < 10) {
-			NotifyCitizen();
-			System.out.println(displaySensorName() + "is below 10" + getUnit() + ", current value is: "
+		if (getSensorValue() < 10) {
+			System.out.println(displaySensorName() + " is below 10" + getUnit() + ", current value is: "
 					+ getSensorValue() + getUnit());
-
+			NotifyCitizen();
+			
 		}
-
 	}
 
 	@Override
 	public void checkSensorStatus(boolean sensorStatus) {
-		if (sensorStatus == false) {
+		if (getSensorStatus() == false) {
+			
 			NotifyEngineer();
-			System.out.println(displaySensorName() + " is down!!!!");
+			
 		}
 	}
 }
 
+// NoiseSensor => Concrete Product
 class NoiseSensor extends Sensor {
-	public NoiseSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue) {
-		super(sensorName, sensorStatus, unit, sensorValue);
+	public NoiseSensor(String sensorName, boolean sensorStatus, String unit, double sensorValue, String installationType) {
+		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Noise Sensor");
 		unit = new String("dB");
-		System.out.println("Noise Sensor is created...");
-
+		System.out.print("Noise Sensor is installed to ");
+		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
 	}
 
 	public void Accept(Visitor visitor) {
@@ -217,57 +215,55 @@ class NoiseSensor extends Sensor {
 
 	@Override
 	public void sensorCalculate(double sensorValue) {
-		if (sensorValue > 85) {
-			NotifyCitizen();
-			System.out.println(displaySensorName() + "is above 85" + getUnit() + ", current value is: "
+		if (getSensorValue() > 85) {
+			System.out.println(displaySensorName() + " is above 85" + getUnit() + ", current value is: "
 					+ getSensorValue() + getUnit());
+			NotifyCitizen();
+			
 		}
-
 	}
 
 	@Override
 	public void checkSensorStatus(boolean sensorStatus) {
-		if (sensorStatus == false) {
+		if (getSensorStatus() == false) {
+			
 			NotifyEngineer();
-			System.out.println(displaySensorName() + " is down!!!!");
+			
 		}
 	}
 }
 
 // Concrete Products Ends
 
-// Composite
-// Component
+// Factory Pattern Ends
 
-interface Neigborhood {
-	void Add(Neigborhood n);
+// Composite Pattern Starts
 
-	void Remove(Neigborhood n);
-
+// Neighborhood => Component
+interface Neighborhood {
+	void Add(Neighborhood n);
+	void Remove(Neighborhood n);
 	void Display(int indent);
-
 	public String getName();
 }
 
-// Leaf 1
-
-class Pole implements Neigborhood {
-
-	private String name;
+// Pole => Leaf 1
+class Pole implements Neighborhood {
+	public static String name;
 
 	public String getName() {
 		return name;
 	}
 
 	public Pole(String name) {
-		this.name = name;
+		Pole.name = name;
 	}
 
-	public void Add(Neigborhood c) {
+	public void Add(Neighborhood c) {
 		System.out.println("Cannot add to a PrimitiveElement.");
 	}
 
-	public void Remove(Neigborhood c) {
+	public void Remove(Neighborhood c) {
 		System.out.println("Cannot remove from a PrimitiveElement.");
 	}
 
@@ -291,18 +287,16 @@ class Pole implements Neigborhood {
 
 }
 
-// Leaf 2
-
-class Apartment implements Neigborhood {
-
-	public String name;
+// Apartment => Leaf 2
+class Apartment implements Neighborhood {
+	public static String name;
 
 	public String getName() {
 		return name;
 	}
 
 	public Apartment(String name) {
-		this.name = name;
+		Apartment.name = name;
 	}
 
 	public void InstallSensor() {
@@ -316,11 +310,11 @@ class Apartment implements Neigborhood {
 		creator4.createSensor();
 	}
 
-	public void Add(Neigborhood d) {
+	public void Add(Neighborhood d) {
 		System.out.println("Cannot add to a PrimitiveElement.");
 	}
 
-	public void Remove(Neigborhood d) {
+	public void Remove(Neighborhood d) {
 		System.out.println("Cannot remove from a PrimitiveElement.");
 	}
 
@@ -333,9 +327,8 @@ class Apartment implements Neigborhood {
 
 }
 
-// Composite
-
-class Street implements Neigborhood {
+// Street => Composite
+class Street implements Neighborhood {
 	private String name;
 
 	public String getName() {
@@ -346,11 +339,11 @@ class Street implements Neigborhood {
 		this.name = name;
 	}
 
-	public void Add(Neigborhood e) {
+	public void Add(Neighborhood e) {
 		elements.add(e);
 	};
 
-	public void Remove(Neigborhood e) {
+	public void Remove(Neighborhood e) {
 		for (int i = 0; i < elements.size(); i++) {
 			if (elements.get(i).getName() == e.getName()) {
 				elements.remove(i);
@@ -369,13 +362,12 @@ class Street implements Neigborhood {
 			elements.get(i).Display(indent + 2);
 		}
 	}
-
-	private ArrayList<Neigborhood> elements = new ArrayList<Neigborhood>();
+	private ArrayList<Neighborhood> elements = new ArrayList<Neighborhood>();
 }
 
 // Composite Pattern Ends
 
-// Visitor Pattern
+// Visitor Pattern Starts
 
 interface Element {
 	public void Accept(Visitor visitor);
@@ -383,35 +375,32 @@ interface Element {
 
 interface Visitor {
 	public void Visit(TemperatureSensor element);
-
 	public void Visit(PollutionSensor element);
-
 	public void Visit(NoiseSensor element);
-
 	public void Visit(CongestionSensor element);
 }
 
+// DataMonitoringDivision => Object Structure
 class DataMonitoringDivision {
 	public void Add(Sensor sensor) {
 		sensors.add(sensor);
 	};
 
 	public void Accept(Visitor visitor) {
-		// set argument to something that helps
-		// tell the Observers what happened
+		// Set argument to something that helps
+		// Tell the Observers what happened
 		for (int i = 0; i < sensors.size(); i++) {
 			sensors.get(i).Accept(visitor);
 		}
 	}
-
 	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 }
 
+// Malfunction => Concrete Visitor
 class Malfunction implements Visitor {
 	static int malfunctionCounter;
 
 	public void Visit(PollutionSensor element) {
-
 		boolean sensorStatus = element.getSensorStatus();
 		element.setSensorStatus(element.getSensorStatus());
 		System.out.println(element.getSensorStatus());
@@ -419,11 +408,9 @@ class Malfunction implements Visitor {
 		if (sensorStatus == false) {
 			malfunctionCounter++;
 		}
-
 	}
 
 	public void Visit(TemperatureSensor element) {
-
 		boolean sensorStatus = element.getSensorStatus();
 		element.setSensorStatus(element.getSensorStatus());
 		System.out.println(element.getSensorStatus());
@@ -431,11 +418,9 @@ class Malfunction implements Visitor {
 		if (sensorStatus == false) {
 			malfunctionCounter++;
 		}
-
 	}
 
 	public void Visit(CongestionSensor element) {
-
 		boolean sensorStatus = element.getSensorStatus();
 		element.setSensorStatus(element.getSensorStatus());
 		System.out.println(element.getSensorStatus());
@@ -443,11 +428,9 @@ class Malfunction implements Visitor {
 		if (sensorStatus == false) {
 			malfunctionCounter++;
 		}
-
 	}
 
 	public void Visit(NoiseSensor element) {
-
 		boolean sensorStatus = element.getSensorStatus();
 		element.setSensorStatus(element.getSensorStatus());
 		System.out.println(element.getSensorStatus());
@@ -455,16 +438,18 @@ class Malfunction implements Visitor {
 		if (sensorStatus == false) {
 			malfunctionCounter++;
 		}
-
 	}
 }
+//Visitor Pattern Ends
 
-//'Observer'  ==> Abstract Observer.
+// Observer Pattern Starts
 
+// Observer  => Abstract Observer
 interface Observer {
 	public void Update(Sensor sensor);
 }
 
+// Citizen => Concrete Observer
 class Citizen implements Observer {
 	private Sensor _sensor;
 	private String _citizen_name;
@@ -498,8 +483,10 @@ class Citizen implements Observer {
 	public String getCitizenName() {
 		return _citizen_name;
 	}
+	
 }
 
+// Engineer => Concrete Observer
 class Engineer implements Observer {
 	private Sensor _sensor;
 	private String _engineer_name;
@@ -545,12 +532,18 @@ class Engineer implements Observer {
 	}
 }
 
+// Sensor is "Subject" for Observer Pattern
+// Sensor is "Product" for Factory Pattern
+// Sensor is "Element" for Visitor Pattern
+
+// All patterns connected via Sensor
 abstract public class Sensor implements Element {
 
 	protected String sensorName;
 	private boolean sensorStatus;
 	private String unit;
 	private double sensorValue;
+	private String installationType;
 
 	abstract public void sensorCalculate(double sensorValue);
 
@@ -560,11 +553,12 @@ abstract public class Sensor implements Element {
 		return sensorName;
 	}
 
-	public Sensor(String sensorName, boolean sensorStatus, String unit, double sensorValue) {
+	public Sensor(String sensorName, boolean sensorStatus, String unit, double sensorValue, String installationType) {
 		this.sensorName = sensorName;
 		this.sensorStatus = sensorStatus;
 		this.unit = unit;
 		this.sensorValue = sensorValue;
+		this.installationType = installationType;
 	}
 
 	public boolean getSensorStatus() {
@@ -582,6 +576,7 @@ abstract public class Sensor implements Element {
 
 	public void setSensorValue(double value) {
 		sensorValue = value;
+		NotifyCitizen();
 	};
 
 	public String getUnit() {
@@ -590,6 +585,14 @@ abstract public class Sensor implements Element {
 
 	public void setUnit(String value) {
 		unit = value;
+	};
+	
+	public String getInstallationType() {
+		return installationType;
+	};
+
+	public void setInstallationType(String value) {
+		installationType = value;
 	};
 
 	// Register the Observers
@@ -644,36 +647,38 @@ abstract public class Sensor implements Element {
 	protected ArrayList<Citizen> citizens = new ArrayList<Citizen>();
 
 	public static void main(String[] args) {
-
-		Neigborhood root = new Street("Prof. Dr. Yusuf Vardar Sk.");
+		
+		Neighborhood root = new Street("Prof. Dr. Yusuf Vardar Sk.");
 		root.Add(new Pole("Best Pole ever Made"));
 		root.Add(new Apartment("Folkart Apt."));
 
 		DataMonitoringDivision e = new DataMonitoringDivision();
-		e.Add(new NoiseSensor("NoiseSensor1", false, "dB", 89));
-		e.Add(new CongestionSensor("CongestionSensor1", false, "km/h", 4));
-		e.Add(new PollutionSensor("PollutionSensor1", true, "AQI", 80));
-		e.Add(new TemperatureSensor("TemperatureSensor1", true, "C", 32.1));
+		e.Add(new NoiseSensor("NoiseSensor1", false, "dB", 89, "Apartment"));
+		e.Add(new CongestionSensor("CongestionSensor1", false, "km/h", 4, "Pole"));
+		e.Add(new PollutionSensor("PollutionSensor1", true, "AQI", 80, "Apartment"));
+		e.Add(new TemperatureSensor("TemperatureSensor1", true, "C", 32.1 , "Pole"));
 
 		Citizen ctz = new Citizen("Naz");
 		Engineer eng = new Engineer("Erdem");
 
-		PollutionSensor sensor1 = new PollutionSensor("PollutionSensor1", true, "AQI", 120);
-		NoiseSensor sensor2 = new NoiseSensor("NoiseSensor1", false, "dB", 95);
-		CongestionSensor sensor3 = new CongestionSensor("CongestionSensor1", false, "km/h", 1);
-		TemperatureSensor sensor4 = new TemperatureSensor("TemperatureSensor1", true, "C", -7);
+		PollutionSensor sensor1 = new PollutionSensor("PollutionSensor1", true, "AQI", 120, "Pole");
+		NoiseSensor sensor2 = new NoiseSensor("NoiseSensor1", false, "dB", 95, "Apartment");
+		CongestionSensor sensor3 = new CongestionSensor("CongestionSensor1", false, "km/h", 1, "Apartment");
+		TemperatureSensor sensor4 = new TemperatureSensor("TemperatureSensor1", true, "C", -7, "Apartment");
 
-		sensor1.AttachCitizen(ctz);
-		sensor2.AttachEngineer(eng);
-		sensor3.AttachEngineer(eng);
-		sensor4.AttachCitizen(ctz);
+		sensor2.AttachCitizen(ctz);
+		sensor1.AttachEngineer(eng);
+		sensor4.AttachEngineer(eng);
+		sensor3.AttachCitizen(ctz);
 
-		eng.Reset();
+		sensor4.setSensorStatus(false);
 		sensor1.setSensorStatus(false);
 		sensor2.setSensorStatus(true);
+		sensor2.setSensorStatus(false);
+		sensor3.setSensorStatus(false);
 		sensor3.setSensorStatus(true);
-		sensor4.setSensorStatus(false);
-		eng.Reset();
+		
+		
 
 		sensor1.checkSensorStatus(true);
 		sensor1.sensorCalculate(100);
@@ -681,7 +686,7 @@ abstract public class Sensor implements Element {
 		sensor3.sensorCalculate(8);
 		sensor4.sensorCalculate(-40);
 
-		Neigborhood comp = new Street("Gul Sk.");
+		Neighborhood comp = new Street("Gul Sk.");
 		Apartment apt = new Apartment("Firuz Apt.");
 		comp.Add(apt);
 		Pole pole = new Pole("Worst Pole Ever Made");
@@ -691,7 +696,7 @@ abstract public class Sensor implements Element {
 		pole.InstallSensor();
 
 		// Add and remove a PrimitiveElement
-		Neigborhood pe = new Apartment("TESLA Apt.");
+		Neighborhood pe = new Apartment("TESLA Apt.");
 		pe.Add(new Pole("Only Pole"));
 		root.Add(pe);
 		root.Remove(pe);
