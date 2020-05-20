@@ -102,9 +102,7 @@ class PollutionSensor extends Sensor {
 		sensorName = new String("Pollution Sensor");
 		unit = new String("AQI");
 		
-		System.out.print("Pollution Sensor is installed to ");
-		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
-		System.out.println(getInstallationType());
+		System.out.println("Pollution Sensor is created");
 	}
 
 	public void Accept(Visitor visitor) {
@@ -137,8 +135,8 @@ class TemperatureSensor extends Sensor {
 		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Temperature Sensor");
 		unit = new String("C°");
-		System.out.print("Temperature Sensor is installed to ");
-		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
+		System.out.println("Temperature Sensor is created");
+
 	}
 
 	public void Accept(Visitor visitor) {
@@ -171,8 +169,7 @@ class CongestionSensor extends Sensor {
 		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Congestion Sensor");
 		unit = new String("km/h");
-		System.out.print("Congestion Sensor is installed to ");
-		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
+		System.out.println("Congestion Sensor is created");
 	}
 
 	public void Accept(Visitor visitor) {
@@ -205,8 +202,7 @@ class NoiseSensor extends Sensor {
 		super(sensorName, sensorStatus, unit, sensorValue, installationType);
 		sensorName = new String("Noise Sensor");
 		unit = new String("dB");
-		System.out.print("Noise Sensor is installed to ");
-		System.out.println((getInstallationType() == "Apartment") ? Apartment.name : Pole.name );
+		System.out.println("Noise Sensor is created");
 	}
 
 	public void Accept(Visitor visitor) {
@@ -249,25 +245,25 @@ interface Neighborhood {
 
 // Pole => Leaf 1
 class Pole implements Neighborhood {
-	public static String name;
+	public String name;
 
 	public String getName() {
 		return name;
 	}
 
 	public Pole(String name) {
-		Pole.name = name;
+		this.name = name;
 	}
 
 	public void Add(Neighborhood c) {
-		System.out.println("Cannot add to a PrimitiveElement.");
+		System.out.println("Cannot add to a Pole.");
 	}
 
 	public void Remove(Neighborhood c) {
-		System.out.println("Cannot remove from a PrimitiveElement.");
+		System.out.println("Cannot remove from a Pole.");
 	}
 
-	public void InstallSensor() {
+	public void InstallSensor(Pole pole) {
 		SensorCreator creator = new PollutionCreator();
 		SensorCreator creator2 = new TemperatureCreator();
 		SensorCreator creator3 = new CongestionCreator();
@@ -276,6 +272,7 @@ class Pole implements Neighborhood {
 		creator2.createSensor();
 		creator3.createSensor();
 		creator4.createSensor();
+		System.out.println("All sensors installed to " + pole.getName());
 	}
 
 	@Override
@@ -289,17 +286,17 @@ class Pole implements Neighborhood {
 
 // Apartment => Leaf 2
 class Apartment implements Neighborhood {
-	public static String name;
+	public String name;
 
 	public String getName() {
 		return name;
 	}
 
 	public Apartment(String name) {
-		Apartment.name = name;
+		this.name = name;
 	}
 
-	public void InstallSensor() {
+	public void InstallSensor(Apartment apartment) {
 		SensorCreator creator = new PollutionCreator();
 		SensorCreator creator2 = new TemperatureCreator();
 		SensorCreator creator3 = new CongestionCreator();
@@ -308,14 +305,15 @@ class Apartment implements Neighborhood {
 		creator2.createSensor();
 		creator3.createSensor();
 		creator4.createSensor();
+		System.out.println("All sensors installed to " + apartment.getName());
 	}
 
 	public void Add(Neighborhood d) {
-		System.out.println("Cannot add to a PrimitiveElement.");
+		System.out.println("Cannot add to a Apartment.");
 	}
 
 	public void Remove(Neighborhood d) {
-		System.out.println("Cannot remove from a PrimitiveElement.");
+		System.out.println("Cannot remove from a Apartment.");
 	}
 
 	@Override
@@ -648,10 +646,6 @@ abstract public class Sensor implements Element {
 
 	public static void main(String[] args) {
 		
-		Neighborhood root = new Street("Prof. Dr. Yusuf Vardar Sk.");
-		root.Add(new Pole("Best Pole ever Made"));
-		root.Add(new Apartment("Folkart Apt."));
-
 		DataMonitoringDivision e = new DataMonitoringDivision();
 		e.Add(new NoiseSensor("NoiseSensor1", false, "dB", 89, "Apartment"));
 		e.Add(new CongestionSensor("CongestionSensor1", false, "km/h", 4, "Pole"));
@@ -686,26 +680,26 @@ abstract public class Sensor implements Element {
 		sensor3.sensorCalculate(8);
 		sensor4.sensorCalculate(-40);
 
+		
+		Neighborhood root = new Street("Prof. Dr. Yusuf Vardar Sk.");
+		root.Add(new Pole("Best Pole ever Made"));
+		root.Add(new Apartment("Folkart Apt."));
+		
 		Neighborhood comp = new Street("Gul Sk.");
 		Apartment apt = new Apartment("Firuz Apt.");
 		comp.Add(apt);
 		Pole pole = new Pole("Worst Pole Ever Made");
 		comp.Add(pole);
 		root.Add(comp);
-		apt.InstallSensor();
-		pole.InstallSensor();
-
-		// Add and remove a PrimitiveElement
-		Neighborhood pe = new Apartment("TESLA Apt.");
-		pe.Add(new Pole("Only Pole"));
-		root.Add(pe);
-		root.Remove(pe);
-
-		// Recursively display nodes
+		apt.InstallSensor(apt);
+		pole.InstallSensor(pole);
+	
 		root.Display(1);
-		e.Accept(new Malfunction());
-		System.out.println("Malfunction number is " + Malfunction.malfunctionCounter);
-
+		
+		System.out.println();
+        System.out.println("Malfunctions: (True for Working, False for Malfunction)");
+        e.Accept(new Malfunction());
+        System.out.println("Total Malfunction number: " + Malfunction.malfunctionCounter);
 	}
 
 }
